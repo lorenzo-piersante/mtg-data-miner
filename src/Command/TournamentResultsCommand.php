@@ -9,7 +9,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-#[AsCommand(name: 'app:tournament-results')]
+#[AsCommand(name: 'melee:tournament-results')]
 class TournamentResultsCommand extends Command
 {
     public function __construct(
@@ -28,29 +28,18 @@ class TournamentResultsCommand extends Command
         // example: 543546
         $lastRoundId = (int) $input->getArgument('lastRoundId');
 
-        $offset = 0;
-        $limit = 500;
-
-        $results = $this->client->getTournamentResults($lastRoundId, $offset, $limit);
-
-        $resultsCount = count($results);
-
-        while ($resultsCount === $limit) {
-            $offset += $limit;
-
-            $additionalResults = $this->client->getTournamentResults($lastRoundId, $offset, $limit);
-            $resultsCount = count($additionalResults);
-
-            $results = array_merge($results, $additionalResults);
-        }
+        $results = $this->client->getTournamentResults($lastRoundId);
 
         $total = count($results);
         $output->writeln("Total: $total");
+        $output->writeln('');
 
         foreach ($results as  $result) {
-            $output->writeln($result['player']);
-            $output->writeln($result['deckList']);
-            $output->writeln($result['matchRecord']);
+            $output->writeln('Player: ' . $result['player']);
+            $output->writeln('Deck: ' . $result['deckList']);
+            $output->writeln('Wins: ' . $result['wins']);
+            $output->writeln('Loses: ' . $result['loses']);
+            $output->writeln('Draws: ' . $result['draws']);
             $output->writeln('');
         }
 

@@ -10,11 +10,29 @@ class MtgMeleeClient
 {
     private const BASE_URL = 'https://melee.gg/';
 
+    public function getTournamentResults(int $lastRoundId): array
+    {
+        $offset = 0;
+        $limit = 500;
+
+        $results = [];
+        do {
+            $additionalResults = $this->getTournamentResultsPaginated($lastRoundId, $offset, $limit);
+            $resultsCount = count($additionalResults);
+
+            $results = array_merge($results, $additionalResults);
+
+            $offset += $limit;
+        } while ($resultsCount === $limit);
+
+        return $results;
+    }
+
     /**
      * @throws GuzzleException
      * @throws InvalidArgumentException
      */
-    public function getTournamentResults(
+    public function getTournamentResultsPaginated(
         int $lastRoundId,
         int $offset = 0,
         int $limit = 500
@@ -175,10 +193,15 @@ class MtgMeleeClient
 
         $output = [];
         foreach ($deckLists as $deckList) {
+            $matchRecord = $deckList->MatchRecord;
+            $score = explode('-', $matchRecord);
+
             $output[] = [
                 'player' => $deckList->Team->Players[0]->DisplayName,
                 'deckList' => $deckList->Decklists[0]->DecklistName,
-                'matchRecord' => $deckList->MatchRecord
+                'wins' => $score[0],
+                'loses' => $score[1],
+                'draws' => $score[2]
             ];
         }
 

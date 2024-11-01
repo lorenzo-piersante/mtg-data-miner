@@ -3,6 +3,7 @@
 require_once __DIR__ . '/vendor/autoload.php';
 
 use App\Client\MtgMeleeClient;
+use App\Command\TournamentWinratesCommand;
 use App\Command\TournamentResultsCommand;
 use Dotenv\Dotenv;
 use Symfony\Component\Console\Application;
@@ -14,5 +15,6 @@ $app = new Application();
 
 $mtgMeleeClient = new MtgMeleeClient();
 $app->add(new TournamentResultsCommand($mtgMeleeClient));
+$app->add(new TournamentWinratesCommand($mtgMeleeClient));
 
 $app->run();
