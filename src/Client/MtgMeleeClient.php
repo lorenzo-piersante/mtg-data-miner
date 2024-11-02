@@ -14,16 +14,13 @@ class MtgMeleeClient
     {
         $offset = 0;
         $limit = 500;
-
         $results = [];
+
         do {
-            $additionalResults = $this->getTournamentResultsPaginated($lastRoundId, $offset, $limit);
-            $resultsCount = count($additionalResults);
-
-            $results = array_merge($results, $additionalResults);
-
+            $batchResults = $this->getTournamentResultsPaginated($lastRoundId, $offset, $limit);
+            $results = array_merge($results, $batchResults);
             $offset += $limit;
-        } while ($resultsCount === $limit);
+        } while (count($batchResults) === $limit);
 
         return $results;
     }

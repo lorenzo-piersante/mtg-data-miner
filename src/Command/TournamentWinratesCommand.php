@@ -20,7 +20,9 @@ class TournamentWinratesCommand extends Command
 
     protected function configure(): void
     {
-        $this->addArgument('lastRoundId', InputArgument::REQUIRED, 'Last round id of the tournament:');
+        $this
+            ->addArgument('lastRoundId', InputArgument::REQUIRED, 'Last round id of the tournament')
+            ->addArgument('limit', InputArgument::OPTIONAL, 'Limit to the n most played decks');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -29,43 +31,50 @@ class TournamentWinratesCommand extends Command
 
         $results = $this->client->getTournamentResults($lastRoundId);
 
-        $aggregates = [];
-        foreach ($results as  $result) {
-            if (!array_key_exists($result['deckList'], $aggregates)) {
-                $aggregates[$result['deckList']] = [
-                    'wins' => $result['wins'],
-                    'loses' => $result['loses'],
-                    'totalGames' => '1'
-                ];
-            } else {
-                $aggregates[$result['deckList']]['wins'] += $result['wins'];
-                $aggregates[$result['deckList']]['loses'] += $result['loses'];
-                $aggregates[$result['deckList']]['totalGames'] += 1;
-            }
+        $aggregates = $this->aggregateResultsByDeck($results);
+
+        uasort($aggregates, fn($a, $b) => $b['totalGames'] <=> $a['totalGames']);
+
+        $limit = $input->getArgument('limit');
+        if (is_numeric($limit)) {
+            $aggregates = array_slice($aggregates, 0, (int) $limit, true);
         }
 
-        // Sort $aggregates by 'totalGames' in descending order
-        uasort(
-            $aggregates, function ($a, $b) {
-                return $b['totalGames'] <=> $a['totalGames'];
-            }
-        );
-
         foreach ($aggregates as $key => $val) {
-            if ($val['wins'] === 0) {
-                $winRate = 0;
-            } elseif ($val['loses'] === 0) {
-                $winRate = 100;
-            } else {
-                $winRate = round(($val['wins'] / ($val['wins'] + $val['loses'])) * 100, 2);
-            }
+            $winrate = $this->calculateWinRate($val['wins'], $val['loses']);
 
             $output->writeln($key);
-            $output->writeln('WinRate: ' . $winRate . ' %');
+            $output->writeln('WinRate: ' . $winrate . ' %');
             $output->writeln('Total Matches: ' . $val['totalGames']);
             $output->writeln('');
         }
 
         return Command::SUCCESS;
+    }
+
+    private function aggregateResultsByDeck(array $results): array
+    {
+        $aggregates = [];
+
+        foreach ($results as $result) {
+            $deckList = $result['deckList'];
+            $aggregates[$deckList]['wins'] = ($aggregates[$deckList]['wins'] ?? 0) + $result['wins'];
+            $aggregates[$deckList]['loses'] = ($aggregates[$deckList]['loses'] ?? 0) + $result['loses'];
+            $aggregates[$deckList]['totalGames'] = ($aggregates[$deckList]['totalGames'] ?? 0) + 1;
+        }
+
+        return $aggregates;
+    }
+
+    private function calculateWinRate(int $wins, int $loses): float
+    {
+        $totalGames = $wins + $loses;
+        if ($totalGames === 0) {
+            return 0;
+        }
+
+        $winrate = ($wins / $totalGames) * 100;
+
+        return round($winrate, 2);
     }
 }
