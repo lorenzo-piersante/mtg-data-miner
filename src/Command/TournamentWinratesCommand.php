@@ -33,7 +33,7 @@ class TournamentWinratesCommand extends Command
 
         $aggregates = $this->aggregateResultsByDeck($results);
 
-        uasort($aggregates, fn($a, $b) => $b['totalGames'] <=> $a['totalGames']);
+        uasort($aggregates, fn($a, $b) => $b['totalDecks'] <=> $a['totalDecks']);
 
         $limit = $input->getArgument('limit');
         if (is_numeric($limit)) {
@@ -45,7 +45,7 @@ class TournamentWinratesCommand extends Command
 
             $output->writeln($key);
             $output->writeln('WinRate: ' . $winrate . ' %');
-            $output->writeln('Total Matches: ' . $val['totalGames']);
+            $output->writeln('Total Decks: ' . $val['totalDecks']);
             $output->writeln('');
         }
 
@@ -60,7 +60,7 @@ class TournamentWinratesCommand extends Command
             $deckList = $result['deckList'];
             $aggregates[$deckList]['wins'] = ($aggregates[$deckList]['wins'] ?? 0) + $result['wins'];
             $aggregates[$deckList]['loses'] = ($aggregates[$deckList]['loses'] ?? 0) + $result['loses'];
-            $aggregates[$deckList]['totalGames'] = ($aggregates[$deckList]['totalGames'] ?? 0) + 1;
+            $aggregates[$deckList]['totalDecks'] = ($aggregates[$deckList]['totalDecks'] ?? 0) + 1;
         }
 
         return $aggregates;

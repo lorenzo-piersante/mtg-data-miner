@@ -36,19 +36,19 @@ Example Output:
 ```
 Azorius Control
 WinRate: 53.05 %
-Total Matches: 238
+Total Decks: 238
 
 Izzet Phoenix
 WinRate: 50.75 %
-Total Matches: 196
+Total Decks: 196
 
 Rakdos Aggro
 WinRate: 51.3 %
-Total Matches: 189
+Total Decks: 189
 
 Enigmatic Incarnation
 WinRate: 52.37 %
-Total Matches: 117
+Total Decks: 117
 ```
 
 ### Tournament results list
