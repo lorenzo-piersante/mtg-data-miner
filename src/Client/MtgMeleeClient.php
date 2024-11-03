@@ -195,7 +195,7 @@ class MtgMeleeClient
 
             $output[] = [
                 'player' => $deckList->Team->Players[0]->DisplayName,
-                'deckList' => $deckList->Decklists[0]->DecklistName,
+                'deckList' => $deckList->Decklists[0]->DecklistName ?? 'Unknown',
                 'wins' => $score[0],
                 'loses' => $score[1],
                 'draws' => $score[2]
